@@ -18,11 +18,11 @@ export const dynamic = "force-dynamic";
  */
 
 /**
- * Headers we deliberately do NOT forward from the browser: `x-forwarded-for`
- * (and friends) identify the *client* to the backend, and the backend's rate
- * limiter partitions on it. Forwarding Next's `x-forwarded-for: ::1` puts every
- * request in one exhausted bucket, so all reads come back `429`. We build the
- * outbound header set from scratch instead of copying the incoming one.
+ * We build the outbound header set from scratch rather than copying the
+ * browser's, so cookies and hop-specific headers never leak through. The one
+ * exception is the client IP: the backend's rate limiter partitions on it, and
+ * without it every request arrives from the Next.js server's IP, collapsing all
+ * users into a single bucket.
  */
 async function forward(
   request: NextRequest,
@@ -38,6 +38,12 @@ async function forward(
   headers.set("Accept", request.headers.get("accept") ?? "application/json");
   headers.set("Accept-Language", "0");
   headers.set("ngrok-skip-browser-warning", "true");
+
+  // Preserve the real client IP so the backend can partition per caller.
+  // Browsers cannot set this header, and Vercel (or `next dev`) populates it on
+  // the incoming request, so the first hop is the actual client address.
+  const clientIp = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
+  if (clientIp) headers.set("x-forwarded-for", clientIp);
 
   // Multer needs the exact multipart boundary, so pass the type through as-is.
   if (hasBody) {
