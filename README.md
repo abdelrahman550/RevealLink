@@ -37,8 +37,8 @@ Requires **Node.js 20+** and a running RevealLink API.
 ```bash
 npm install
 
-cp .env.example .env.local     # then fill in AUTH_SECRET and API_URL
-openssl rand -base64 32        # paste into AUTH_SECRET
+# create a .env.local with the values listed below
+openssl rand -base64 32        # generate a value for AUTH_SECRET
 
 npm run dev                    # http://localhost:3000
 ```
