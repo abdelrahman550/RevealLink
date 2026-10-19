@@ -1,0 +1,414 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ------------------------------------------------------------------ *
+ * RevealLink — "a black room, crimson light, and one big wink".
+ *
+ * Flat by decree. Exactly three colours live here:
+ *   --bg       #0C0508  blackened wine
+ *   --crimson  #DC143C  the only accent
+ *   --bone     #F6EDE8  text and contrast
+ *
+ * Every muted or in-between tone is one of those three at lower opacity.
+ * There are no gradients, no glows and no blur: depth comes only from
+ * hard offset shadows. The signature is the Wink — a huge line-art face
+ * that keeps one eye shut while a sender is anonymous and opens both
+ * when a reveal is approved.
+ * ------------------------------------------------------------------ */
+
+:root {
+  /* 18px cards; buttons are full pills. */
+  --radius: 1.125rem;
+
+  /* The only three colours. */
+  --bg: #0c0508;
+  --crimson: #dc143c;
+  --bone: #f6ede8;
+
+  --background: var(--bg);
+  --foreground: var(--bone);
+
+  --card: var(--bg);
+  --card-foreground: var(--bone);
+  --popover: var(--bg);
+  --popover-foreground: var(--bone);
+
+  --primary: var(--crimson);
+  --primary-foreground: var(--bone);
+
+  /* A surface tint, not a fourth colour: bone at 6%. */
+  --secondary: rgb(246 237 232 / 0.06);
+  --secondary-foreground: var(--bone);
+
+  --muted: rgb(246 237 232 / 0.06);
+  --muted-foreground: rgb(246 237 232 / 0.55);
+
+  --accent: var(--crimson);
+  --accent-foreground: var(--bone);
+
+  --destructive: var(--crimson);
+  --destructive-foreground: var(--bone);
+
+  --border: rgb(246 237 232 / 0.12);
+  --input: rgb(246 237 232 / 0.12);
+  --ring: var(--crimson);
+
+  --success: var(--bone);
+  --warning: var(--bone);
+
+  color-scheme: dark;
+}
+
+/* The theme is forced dark; this block lets `.dark:` utilities and
+ * next-themes' class attribute keep resolving. */
+.dark {
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+
+  /* The two named colours plus a bone/black mix for the room itself. */
+  --color-bg: var(--bg);
+  --color-bone: var(--bone);
+  --color-crimson: var(--crimson);
+
+  --radius-sm: 0.75rem;
+  --radius-md: 0.875rem;
+  --radius-lg: 1.125rem;
+  --radius-xl: 1.25rem;
+  --radius-2xl: 1.25rem;
+  --radius-3xl: 1.5rem;
+
+  /* Depth is a hard offset, never a soft blur. */
+  --shadow-xs: 2px 2px 0 rgb(246 237 232 / 0.1);
+  --shadow-sm: 3px 3px 0 rgb(246 237 232 / 0.12);
+  --shadow-md: 4px 4px 0 rgb(246 237 232 / 0.14);
+  --shadow-lg: 5px 5px 0 rgb(246 237 232 / 0.16);
+  --shadow-xl: 6px 6px 0 rgb(246 237 232 / 0.18);
+  --shadow-2xl: 8px 8px 0 rgb(246 237 232 / 0.2);
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-unbounded), var(--font-inter), ui-sans-serif, sans-serif;
+  /* No monospace face; labels are Inter 600, tracked and uppercased. */
+  --font-mono: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  /* Motion is snappy — quick steps and hard snaps, 150–250ms. */
+  --animate-appear: appear 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-shimmer: shimmer 1.2s steps(6, end) infinite;
+  --animate-heartbeat: heartbeat 1.1s steps(2, end) infinite;
+  --animate-pulse-soft: pulse-soft 1s steps(2, end) infinite;
+  --animate-rise: rise 0.9s steps(6, end) infinite;
+  --animate-flash: flash 0.5s steps(4, end) both;
+  --animate-wipe: wipe 0.4s cubic-bezier(0.85, 0, 0.15, 1) both;
+  --animate-bounce-dot: bounce-dot 0.9s steps(3, end) infinite;
+
+  @keyframes appear {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* A hard bar of bone sweeping across a placeholder. */
+  @keyframes shimmer {
+    from {
+      transform: translateX(-120%);
+    }
+    to {
+      transform: translateX(240%);
+    }
+  }
+
+  @keyframes heartbeat {
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.035);
+    }
+  }
+
+  @keyframes pulse-soft {
+    0%,
+    100% {
+      opacity: 0.5;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+
+  @keyframes rise {
+    0% {
+      transform: translateY(4px);
+      opacity: 0;
+    }
+    40% {
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(-22px);
+      opacity: 0;
+    }
+  }
+
+  /* The unlock: a solid crimson beat before the room changes. */
+  @keyframes flash {
+    0% {
+      opacity: 0;
+    }
+    25% {
+      opacity: 1;
+    }
+    70% {
+      opacity: 0.9;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+
+  /* A flat, hard-edged shape crossing the screen left to right. */
+  @keyframes wipe {
+    from {
+      transform: translateX(-101%);
+    }
+    to {
+      transform: translateX(101%);
+    }
+  }
+
+  @keyframes bounce-dot {
+    0%,
+    80%,
+    100% {
+      transform: translateY(0);
+    }
+    40% {
+      transform: translateY(-4px);
+    }
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * Base
+ * ------------------------------------------------------------------ */
+
+@layer base {
+  *,
+  ::after,
+  ::before {
+    border-color: var(--color-border);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    scrollbar-gutter: stable;
+  }
+
+  @media (pointer: fine) {
+    html {
+      overscroll-behavior: none;
+    }
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Unbounded carries the loud type; tracking stays tight. */
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    text-wrap: balance;
+    scroll-margin-top: 5rem;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  ::selection {
+    background-color: var(--color-crimson);
+    color: var(--color-bone);
+  }
+
+  /* Focus is a flat crimson ring — never a glow. */
+  :focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+  }
+
+  input,
+  textarea,
+  select,
+  button {
+    font: inherit;
+    color-scheme: dark;
+  }
+
+  ::placeholder {
+    color: color-mix(in srgb, var(--color-muted-foreground) 90%, transparent);
+  }
+
+  button,
+  a,
+  [role="button"] {
+    touch-action: manipulation;
+  }
+
+  /* Spec: touch targets are at least 44px. */
+  @media (pointer: coarse) {
+    button,
+    [role="button"],
+    a[data-touch-target] {
+      min-height: 44px;
+    }
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * Utilities
+ * ------------------------------------------------------------------ */
+
+/** The default surface: solid room colour inside a 1.5px bone hairline. */
+@utility flat-card {
+  background-color: var(--bg);
+  border: 1.5px solid var(--border);
+}
+
+/** A raised surface for menus and sheets — same hairline, on top. */
+@utility flat-solid {
+  background-color: var(--bg);
+  border: 1.5px solid var(--border);
+  box-shadow: var(--shadow-lg);
+}
+
+/** Depth, flat: a hard crimson block offset down-right. */
+@utility flat-shadow {
+  box-shadow: 6px 6px 0 var(--crimson);
+}
+
+@utility flat-shadow-sm {
+  box-shadow: 4px 4px 0 var(--crimson);
+}
+
+/** A quiet tinted surface — crimson at 12% over the room. */
+@utility flat-tint {
+  background-color: color-mix(in srgb, var(--crimson) 12%, var(--bg));
+  border: 1.5px solid var(--border);
+}
+
+/** A hard 3px crimson rule, e.g. the tab indicator. */
+@utility flat-rule {
+  background-color: var(--crimson);
+}
+
+/** Small uppercase label voice: Inter 600, 11px, tracked. */
+@utility label-caps {
+  font-family: var(--font-sans);
+  font-size: 0.6875rem;
+  line-height: 1;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+@utility tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+@utility scroll-area-thin {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(246 237 232 / 0.18) transparent;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: rgb(246 237 232 / 0.16);
+    border-radius: 999px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: rgb(246 237 232 / 0.28);
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * Sonner — a solid crimson bar dropping in from the top, bone text.
+ * ------------------------------------------------------------------ */
+
+[data-sonner-toast] {
+  background-color: var(--crimson) !important;
+  color: var(--bone) !important;
+  border: 1.5px solid color-mix(in srgb, var(--bone) 55%, transparent) !important;
+  border-radius: 999px !important;
+  box-shadow: 4px 4px 0 color-mix(in srgb, var(--bone) 22%, transparent) !important;
+  font-family: var(--font-sans);
+}
+
+[data-sonner-toast] [data-title],
+[data-sonner-toast] [data-description],
+[data-sonner-toast] [data-icon],
+[data-sonner-toast] [data-close-button] {
+  color: var(--bone) !important;
+}
+
+[data-sonner-toast] [data-close-button] {
+  border-color: color-mix(in srgb, var(--bone) 55%, transparent) !important;
+}
+
+/* Opt out of motion for anyone who asks. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
