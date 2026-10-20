@@ -45,6 +45,13 @@ interface FormItemProps extends Omit<React.ComponentProps<"div">, "children"> {
   required?: boolean;
   /** Renders the label visually hidden but still associated. */
   hideLabel?: boolean;
+  /**
+   * Extra control rendered inside a relative wrapper beside the input — e.g. a
+   * password reveal button. Keep it here instead of wrapping `children` in the
+   * caller, otherwise the id/aria wiring would land on the wrapper, not the
+   * input.
+   */
+  addon?: React.ReactNode;
   children: React.ReactElement<Record<string, unknown>>;
 }
 
@@ -54,6 +61,7 @@ export function FormItem({
   hint,
   required,
   hideLabel,
+  addon,
   className,
   children,
   ...rest
@@ -85,7 +93,14 @@ export function FormItem({
         </Label>
       ) : null}
 
-      {control}
+      {addon ? (
+        <div className="relative">
+          {control}
+          {addon}
+        </div>
+      ) : (
+        control
+      )}
 
       {hint ? (
         <p id={`${id}-hint`} className="text-[12.5px] leading-snug text-muted-foreground">

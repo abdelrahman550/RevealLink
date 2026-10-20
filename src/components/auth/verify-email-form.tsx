@@ -2,14 +2,17 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { MailCheckIcon } from "lucide-react";
 
 import { confirmEmailAction, resendConfirmationAction } from "@/actions/auth.actions";
 import { Button } from "@/components/ui/button";
+import { FormItem } from "@/components/ui/form";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { SubmitButton } from "@/components/shared/spinner";
-import { otpSchema } from "@/lib/validation";
+import { forgotPasswordSchema, otpSchema, type ForgotPasswordValues } from "@/lib/validation";
 
 export function VerifyEmailForm({ email }: { email: string }) {
   const router = useRouter();
@@ -135,36 +138,46 @@ export function VerifyEmailForm({ email }: { email: string }) {
 
 /** Standalone email capture used when the confirmation page has no `email`. */
 export function ResendConfirmationForm() {
-  const [email, setEmail] = React.useState("");
   const [pending, setPending] = React.useState(false);
 
+  // Same shape as the forgot-password form: one validated email address.
+  const form = useForm<ForgotPasswordValues>({
+    resolver: zodResolver(forgotPasswordSchema),
+    defaultValues: { email: "" },
+  });
+
+  const onSubmit = form.handleSubmit(async ({ email }) => {
+    setPending(true);
+    const result = await resendConfirmationAction(email);
+    setPending(false);
+
+    if (!result.ok) {
+      toast.error(result.message);
+      return;
+    }
+
+    toast.success("If that account exists, a code has been sent.");
+  });
+
   return (
-    <form
-      onSubmit={async (event) => {
-        event.preventDefault();
-        setPending(true);
-        const result = await resendConfirmationAction(email);
-        setPending(false);
-        if (!result.ok) {
-          toast.error(result.message);
-          return;
-        }
-        toast.success("If that account exists, a code has been sent.");
-      }}
-      className="space-y-4"
-    >
-      <input
-        type="email"
-        name="email"
-        value={email}
-        onChange={(event) => setEmail(event.target.value)}
+    <form onSubmit={onSubmit} noValidate className="space-y-4">
+      <FormItem
+        label="Email address"
+        error={form.formState.errors.email?.message}
+        hideLabel
         required
-        autoComplete="email"
-        spellCheck={false}
-        placeholder="you@example.com"
-        aria-label="Email address"
-        className="flex h-11 w-full rounded-full border border-input bg-bone/[0.06] px-4 py-1 text-sm transition-[border-color,box-shadow,background-color] duration-200 placeholder:text-muted-foreground hover:border-bone/30 focus-visible:border-crimson focus-visible:bg-bone/[0.07]  focus-visible:outline-none"
-      />
+      >
+        <input
+          {...form.register("email")}
+          type="email"
+          name="email"
+          autoComplete="email"
+          spellCheck={false}
+          placeholder="you@example.com"
+          className="flex h-11 w-full rounded-full border border-input bg-bone/[0.06] px-4 py-1 text-sm transition-[border-color,box-shadow,background-color] duration-200 placeholder:text-muted-foreground hover:border-bone/30 focus-visible:border-crimson focus-visible:bg-bone/[0.07]  focus-visible:outline-none"
+        />
+      </FormItem>
+
       <SubmitButton className="w-full" pending={pending} pendingLabel="Sending…">
         Send Confirmation Code
       </SubmitButton>
