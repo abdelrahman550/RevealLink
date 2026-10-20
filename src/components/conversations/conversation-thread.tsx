@@ -6,6 +6,8 @@ import { toast } from "sonner";
 import { ArrowLeftIcon, CheckIcon, Loader2Icon, LockOpenIcon, SendIcon } from "lucide-react";
 
 import { cn, formatDateTime, formatRelativeTime } from "@/lib/utils";
+import { LIMITS } from "@/lib/constants";
+import { messageContentSchema } from "@/lib/validation";
 import type { ConversationMessage, UserSummary } from "@/lib/api/types";
 import { sendConversationMessageAction } from "@/actions/conversation.actions";
 import { conversationsApi, useGetConversationMessagesQuery } from "@/store/api/conversations.api";
@@ -66,6 +68,13 @@ export function ConversationThread({
   const [justSent, setJustSent] = React.useState(false);
   const scrollRef = React.useRef<HTMLDivElement>(null);
 
+  // One source of truth for the reply: the same schema the action enforces.
+  const parsedBody = messageContentSchema.safeParse(body);
+  const bodyError =
+    !parsedBody.success && body.trim().length >= LIMITS.messageMin
+      ? (parsedBody.error.issues[0]?.message ?? "That message is invalid.")
+      : null;
+
   // The send button becomes a checkmark for a beat, then relaxes.
   React.useEffect(() => {
     if (!justSent) return;
@@ -92,8 +101,9 @@ export function ConversationThread({
   }, [messages.length]);
 
   const send = async () => {
-    const content = body.trim();
-    if (content.length < 2 || sending) return;
+    if (!parsedBody.success || sending) return;
+
+    const content = parsedBody.data;
 
     const temp: ConversationMessage = {
       _id: `optimistic-${Date.now()}`,
@@ -216,6 +226,8 @@ export function ConversationThread({
             rows={1}
             placeholder="Say it. They already know it's you."
             aria-label="Message"
+            aria-invalid={bodyError ? true : undefined}
+            aria-describedby={bodyError ? "conversation-message-error" : undefined}
             className={cn(
               "max-h-40 min-h-11 flex-1 resize-none rounded-2xl border-[1.5px] border-input bg-bone/[0.05] px-4 py-3 text-sm transition-[border-color,background-color] duration-150",
               "placeholder:text-muted-foreground hover:border-bone/30",
@@ -226,7 +238,7 @@ export function ConversationThread({
           <Button
             type="submit"
             size="icon"
-            disabled={sending || body.trim().length < 2}
+            disabled={sending || !parsedBody.success}
             aria-label="Send message"
           >
             {sending ? (
@@ -238,6 +250,16 @@ export function ConversationThread({
             )}
           </Button>
         </div>
+
+        {bodyError ? (
+          <p
+            id="conversation-message-error"
+            role="alert"
+            className="mt-2 px-0.5 text-[12.5px] leading-snug text-crimson"
+          >
+            {bodyError}
+          </p>
+        ) : null}
 
         <p className="mt-2 px-0.5 label-caps text-muted-foreground">
           Enter to send · Shift + Enter for a new line

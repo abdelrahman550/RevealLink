@@ -7,7 +7,7 @@ import { messagesApi } from "@/lib/api/endpoints";
 import { ApiError } from "@/lib/api/errors";
 import { requireAccessToken, runAction } from "@/lib/actions";
 import { LIMITS } from "@/lib/constants";
-import { mongoIdSchema } from "@/lib/validation";
+import { messageContentSchema, mongoIdSchema } from "@/lib/validation";
 
 /**
  * POST /messages
@@ -18,15 +18,10 @@ import { mongoIdSchema } from "@/lib/validation";
 
 const ATTACHMENT_FIELD = "attachments";
 
-const composeSchema = z
-  .strictObject({
-    receiverId: mongoIdSchema,
-    content: z.string().trim().max(LIMITS.messageMax, "Message is too long.").optional(),
-  })
-  .refine((data) => Boolean(data.content?.trim().length), {
-    path: ["content"],
-    message: "Write a message before sending.",
-  });
+const composeSchema = z.strictObject({
+  receiverId: mongoIdSchema,
+  content: messageContentSchema,
+});
 
 function collectFiles(formData: FormData): File[] {
   return formData
@@ -54,7 +49,7 @@ function validateFiles(files: File[]): string | null {
 export async function createMessageAction(formData: FormData) {
   const fields = composeSchema.safeParse({
     receiverId: formData.get("receiverId"),
-    content: formData.get("content") || undefined,
+    content: formData.get("content") ?? "",
   });
 
   if (!fields.success) {
@@ -84,7 +79,7 @@ export async function createMessageAction(formData: FormData) {
 
     const payload = new FormData();
     payload.append("receiverId", fields.data.receiverId);
-    if (fields.data.content) payload.append("content", fields.data.content);
+    payload.append("content", fields.data.content);
     for (const file of files) payload.append(ATTACHMENT_FIELD, file);
 
     const message = await messagesApi.create(payload, accessToken);

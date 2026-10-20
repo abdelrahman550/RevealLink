@@ -12,6 +12,8 @@ import { LIMITS } from "@/lib/constants";
 const PASSWORD_REGEX = /^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[#?!@$%^&*-]).{8,64}$/;
 const OTP_REGEX = /^\d{6}$/;
 const MONGO_ID_REGEX = /^[0-9a-fA-F]{24}$/;
+/** Letters (any script), marks, spaces, apostrophes, periods and hyphens. */
+const NAME_REGEX = /^[\p{L}\p{M}][\p{L}\p{M} .'’-]*$/u;
 
 export const passwordMessage =
   "8–64 characters with an uppercase letter, a lowercase letter, a number & one of # ? ! @ $ % ^ & * -";
@@ -44,25 +46,34 @@ export const mongoIdSchema = z
   .min(1, "ID is required.")
   .regex(MONGO_ID_REGEX, "Invalid ID format.");
 
-export const firstNameSchema = z
+/** Raw text pasted into the "who are you writing to?" prompt. */
+export const recipientInputSchema = z
   .string()
   .trim()
-  .min(2, "First name must be between 2 and 25 characters.")
-  .max(25, "First name must be between 2 and 25 characters.");
+  .min(1, "Paste the link someone shared with you.")
+  .max(2048, "That link is too long — paste just the link.");
 
-export const lastNameSchema = z
-  .string()
-  .trim()
-  .min(2, "Last name must be between 2 and 25 characters.")
-  .max(25, "Last name must be between 2 and 25 characters.");
+function nameSchema(label: "First name" | "Last name") {
+  return z
+    .string()
+    .trim()
+    .min(2, `${label} must be between 2 and 25 characters.`)
+    .max(25, `${label} must be between 2 and 25 characters.`)
+    .regex(NAME_REGEX, "Use letters, spaces, apostrophes, periods or hyphens only.");
+}
+
+export const firstNameSchema = nameSchema("First name");
+
+export const lastNameSchema = nameSchema("Last name");
 
 export const userNameSchema = z
   .string()
   .trim()
-  .min(1, "Username is required.")
-  .max(51, "Username must be under 51 characters.")
+  .min(2, "Enter your first and last name.")
+  .max(51, "Name must be under 51 characters.")
+  .regex(NAME_REGEX, "Use letters, spaces, apostrophes, periods or hyphens only.")
   .refine((value) => value.includes(" "), {
-    message: "Username must contain your first and last name.",
+    message: "Enter both your first and last name.",
   });
 
 /** Full E.164 number — what the backend stores and validates. */
@@ -87,12 +98,28 @@ export const egyptPhoneSchema = z
     "Enter a 10-digit Egyptian mobile number, e.g. 1012345678.",
   );
 
+const earliestBirthDate = new Date(Date.UTC(LIMITS.earliestBirthYear, 0, 1));
+
 export const dobSchema = z
   .iso
   .date("Date of birth must be a valid date (YYYY-MM-DD).")
-  .refine((value) => new Date(value) <= new Date(), {
+  .refine((value) => new Date(`${value}T00:00:00Z`) <= new Date(), {
     message: "Date of birth cannot be in the future.",
-  });
+  })
+  .refine((value) => new Date(`${value}T00:00:00Z`) >= earliestBirthDate, {
+    message: `Date of birth cannot be before ${LIMITS.earliestBirthYear}.`,
+  })
+  .refine(
+    (value) => {
+      const birth = new Date(`${value}T00:00:00Z`);
+      const now = new Date();
+      const cutoff = new Date(
+        Date.UTC(now.getUTCFullYear() - LIMITS.minimumAge, now.getUTCMonth(), now.getUTCDate()),
+      );
+      return birth <= cutoff;
+    },
+    { message: `You must be at least ${LIMITS.minimumAge} years old.` },
+  );
 
 export const genderSchema = z.union([
   z.literal(GenderEnum.MALE),
@@ -111,7 +138,7 @@ export const messageContentSchema = z
 
 export const loginSchema = z.strictObject({
   email: emailSchema,
-  password: passwordPresenceSchema,
+  password: passwordSchema,
 });
 export type LoginValues = z.infer<typeof loginSchema>;
 
@@ -203,15 +230,10 @@ export const profileFormSchema = z
   );
 export type ProfileValues = z.infer<typeof profileFormSchema>;
 
-export const composeMessageSchema = z
-  .strictObject({
-    receiverId: mongoIdSchema,
-    content: messageContentSchema.optional().or(z.literal("")),
-  })
-  .refine((data) => Boolean(data.content?.trim().length), {
-    path: ["content"],
-    message: "Write a message before sending.",
-  });
+export const composeMessageSchema = z.strictObject({
+  receiverId: mongoIdSchema,
+  content: messageContentSchema,
+});
 export type ComposeMessageValues = z.infer<typeof composeMessageSchema>;
 
 export const conversationMessageSchema = z.strictObject({

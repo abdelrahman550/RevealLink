@@ -46,6 +46,7 @@ export function TwoFactorCard({
       return;
     }
 
+    setEmail(parsed.data);
     setStep("code");
     toast.success("We sent a verification code to your inbox.");
   };

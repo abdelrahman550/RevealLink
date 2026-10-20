@@ -20,6 +20,9 @@ export const LIMITS = {
   passwordMax: 64,
   messageMin: 2,
   messageMax: 50_000,
+  /** Date-of-birth floor used by the profile/register forms. */
+  minimumAge: 13,
+  earliestBirthYear: 1900,
 } as const;
 
 export const PASSWORD_REQUIREMENTS =

@@ -9,6 +9,7 @@ import { toast } from "sonner";
 
 import { resetPasswordAction, verifyForgotPasswordAction } from "@/actions/auth.actions";
 import { FormItem } from "@/components/ui/form";
+import { CopyPasswordButton } from "@/components/ui/copy-password-button";
 import { Input } from "@/components/ui/input";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { SubmitButton } from "@/components/shared/spinner";
@@ -44,7 +45,11 @@ export function ResetPasswordForm({ initialEmail }: { initialEmail: string }) {
   const onVerify = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    const email = form.getValues("email");
+    // Phase one has its own submit handler, so the resolver never runs here.
+    // Validate the email explicitly — otherwise an empty address (or one the
+    // browser's loose `type="email"` accepts) is sent to the action.
+    if (!(await form.trigger("email"))) return;
+
     const parsed = resetPasswordSchema.shape.otp.safeParse(otp);
 
     if (!parsed.success) {
@@ -52,6 +57,7 @@ export function ResetPasswordForm({ initialEmail }: { initialEmail: string }) {
       return;
     }
 
+    const email = form.getValues("email");
     setVerifying(true);
     setOtpError(null);
 
@@ -97,7 +103,7 @@ export function ResetPasswordForm({ initialEmail }: { initialEmail: string }) {
       </div>
 
       {!verified ? (
-        <form onSubmit={onVerify} className="space-y-5">
+        <form onSubmit={onVerify} noValidate className="space-y-5">
           <FormItem label="Email" error={errors.email?.message} required>
             <Input
               {...form.register("email")}
@@ -151,6 +157,11 @@ export function ResetPasswordForm({ initialEmail }: { initialEmail: string }) {
             error={errors.password?.message}
             hint={PASSWORD_REQUIREMENTS}
             required
+            addon={
+              <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                <CopyPasswordButton getValue={() => form.getValues("password")} />
+              </div>
+            }
           >
             <Input
               {...form.register("password")}
@@ -158,6 +169,7 @@ export function ResetPasswordForm({ initialEmail }: { initialEmail: string }) {
               name="password"
               autoComplete="new-password"
               placeholder="New password"
+              className="pr-10"
             />
           </FormItem>
 

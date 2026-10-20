@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowRightIcon, LinkIcon } from "lucide-react";
 
 import { extractRecipientId } from "@/lib/recipient";
+import { recipientInputSchema } from "@/lib/validation";
 import { PublicSend } from "@/components/messages/public-send";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,7 +26,13 @@ export function RecipientPrompt({ invalidLink = false }: { invalidLink?: boolean
   const submit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const id = extractRecipientId(value);
+    const parsed = recipientInputSchema.safeParse(value);
+    if (!parsed.success) {
+      setError(parsed.error.issues[0]?.message ?? "Paste the link someone shared with you.");
+      return;
+    }
+
+    const id = extractRecipientId(parsed.data);
     if (!id) {
       setError(
         "That doesn’t look like a RevealLink link. Paste the whole link someone shared with you.",

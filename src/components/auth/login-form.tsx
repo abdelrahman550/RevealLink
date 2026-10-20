@@ -15,6 +15,7 @@ import { loginSchema, otpSchema, type LoginValues } from "@/lib/validation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormItem } from "@/components/ui/form";
+import { CopyPasswordButton } from "@/components/ui/copy-password-button";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { SubmitButton } from "@/components/shared/spinner";
 
@@ -201,30 +202,33 @@ export function LoginForm() {
           label="Password"
           error={errors.password?.message}
           required
+          addon={
+            <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center">
+              <CopyPasswordButton getValue={() => form.getValues("password")} />
+              <button
+                type="button"
+                onClick={() => setRevealPassword((value) => !value)}
+                className="rounded-full p-1.5 text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+                aria-label={revealPassword ? "Hide password" : "Show password"}
+                aria-pressed={revealPassword}
+              >
+                {revealPassword ? (
+                  <EyeOffIcon className="size-4" aria-hidden="true" />
+                ) : (
+                  <EyeIcon className="size-4" aria-hidden="true" />
+                )}
+              </button>
+            </div>
+          }
         >
-          <div className="relative">
-            <Input
-              {...form.register("password")}
-              type={revealPassword ? "text" : "password"}
-              name="password"
-              autoComplete="current-password"
-              placeholder="Your password"
-              className="pr-10"
-            />
-            <button
-              type="button"
-              onClick={() => setRevealPassword((value) => !value)}
-              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1.5 text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
-              aria-label={revealPassword ? "Hide password" : "Show password"}
-              aria-pressed={revealPassword}
-            >
-              {revealPassword ? (
-                <EyeOffIcon className="size-4" aria-hidden="true" />
-              ) : (
-                <EyeIcon className="size-4" aria-hidden="true" />
-              )}
-            </button>
-          </div>
+          <Input
+            {...form.register("password")}
+            type={revealPassword ? "text" : "password"}
+            name="password"
+            autoComplete="current-password"
+            placeholder="Your password"
+            className="pr-16"
+          />
         </FormItem>
 
         {formError ? (
