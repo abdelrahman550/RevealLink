@@ -18,6 +18,7 @@ import { FormItem } from "@/components/ui/form";
 import { CopyPasswordButton } from "@/components/ui/copy-password-button";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { SubmitButton } from "@/components/shared/spinner";
+import { GoogleButton } from "@/components/auth/google-button";
 
 type Step = { name: "credentials" } | { name: "otp"; email: string };
 
@@ -185,6 +186,8 @@ export function LoginForm() {
           </p>
         </div>
       </div>
+
+      <GoogleButton label="Sign in with Google" />
 
       <form onSubmit={onSubmit} noValidate className="space-y-5">
         <FormItem label="Email" error={errors.email?.message} required>

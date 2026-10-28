@@ -28,19 +28,19 @@ export function MobileNav({
         <Button
           variant="ghost"
           size="icon"
-          className="md:hidden"
+          className="lg:hidden"
           aria-label="Open navigation menu"
         >
           <MenuIcon aria-hidden="true" />
         </Button>
       </SheetTrigger>
 
-      <SheetContent side="right" className="w-[min(18rem,85vw)] p-0">
+      <SheetContent side="right" className="h-dvh w-[min(18rem,85vw)] p-0">
         <SheetHeader>
           <SheetTitle>Menu</SheetTitle>
         </SheetHeader>
 
-        <nav className="flex flex-col px-3 pb-4" aria-label="Site">
+        <nav className="flex flex-1 flex-col overflow-y-auto px-3 pb-4" aria-label="Site">
           {links.map((link) => (
             <Link
               key={link.href}
@@ -53,7 +53,7 @@ export function MobileNav({
           ))}
         </nav>
 
-        <div className="mt-auto flex flex-col gap-2 border-t border-border p-4">
+        <div className="mt-auto flex flex-col gap-2 border-t border-border p-4 pb-[calc(1rem_+_env(safe-area-inset-bottom))]">
           {signedIn ? (
             <Button asChild>
               <Link href="/dashboard" onClick={() => setOpen(false)}>

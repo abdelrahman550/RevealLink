@@ -11,10 +11,12 @@ import { APP_NAME } from "@/lib/constants";
 export function Logo({
   className,
   showWordmark = true,
+  wordmarkClassName,
   href = "/",
 }: {
   className?: string;
   showWordmark?: boolean;
+  wordmarkClassName?: string;
   href?: string | null;
 }) {
   const mark = (
@@ -50,7 +52,10 @@ export function Logo({
       {showWordmark ? (
         <span
           translate="no"
-          className="font-display text-[16px] font-extrabold tracking-[-0.03em] text-bone"
+          className={cn(
+            "font-display text-[16px] font-extrabold tracking-[-0.03em] text-bone",
+            wordmarkClassName,
+          )}
         >
           {APP_NAME}
         </span>

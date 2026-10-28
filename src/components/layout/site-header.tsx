@@ -18,15 +18,15 @@ export async function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-40 border-b-[1.5px] border-border bg-background">
-      <div className="mx-auto flex h-16 w-full max-w-6xl items-center gap-6 px-5 sm:px-8">
-        <Logo />
+      <div className="mx-auto flex h-16 w-full max-w-6xl items-center gap-3 px-5 sm:gap-6 sm:px-8">
+        <Logo wordmarkClassName="max-[359px]:hidden" />
 
-        <nav className="hidden items-center gap-1 md:flex" aria-label="Site">
+        <nav className="hidden items-center gap-1 lg:flex" aria-label="Site">
           {NAV_LINKS.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="rounded-full px-3 py-2 text-[13.5px] text-muted-foreground transition-colors hover:text-crimson focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+              className="whitespace-nowrap rounded-full px-3 py-2 text-[13.5px] text-muted-foreground transition-colors hover:text-crimson focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
             >
               {link.label}
             </Link>
